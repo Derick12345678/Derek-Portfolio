@@ -6,7 +6,7 @@ window.onload = () => loadModel();
 
 function loadModel() {
   const loader = new GLTFLoader();
-  loader.load('public/avatar.glb',
+  loader.load('avatar.glb',
     (gltf) => {
       setupScene(gltf);
       document.getElementById('avatar-loading').style.display = 'none';
@@ -92,8 +92,8 @@ function setupScene(gltf) {
     // Load animations
     const mixer = new THREE.AnimationMixer(avatar);
     const clips = gltf.animations;
-    const waveClip = THREE.AnimationClip.findByName(clips, 'waving');
-    const stumbleClip = THREE.AnimationClip.findByName(clips, 'stagger');
+    const waveClip = THREE.AnimationClip.findByName(clips, 'Salute');
+    const stumbleClip = THREE.AnimationClip.findByName(clips, 'drunk.001');
     const waveAction = mixer.clipAction(waveClip);
     const stumbleAction = mixer.clipAction(stumbleClip);
 
