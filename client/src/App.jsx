@@ -9,15 +9,15 @@ export default function App() {
     <Router>
       <nav style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
         <Link to="/">Home</Link>
-        <Link to="/About">About</Link>
-        <Link to="/Contact">Contact</Link>
-        <Link to="/Projects">Projects</Link>
+        <Link to="/about">About</Link>
+        <Link to="/contact">Contact</Link>
+        <Link to="/projects">Projects</Link>
       </nav>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/About" element={<About />} />
-        <Route path="/Contact" element={<Contact />} />
-        <Route path="/Projects" element={<Projects />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/projects" element={<Projects />} />
       </Routes>
     </Router>
   );
