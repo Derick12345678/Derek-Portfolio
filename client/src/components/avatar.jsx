@@ -41,9 +41,7 @@ export default function Avatar() {
       container.appendChild(renderer.domElement);
 
       // Camera setup
-      const camera = new THREE.PerspectiveCamera(
-        45, container.clientWidth / container.clientHeight);
-      camera.position.set(0.2, 0.5, 1);
+      const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight);
 
       const controls = new OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
@@ -94,12 +92,12 @@ export default function Avatar() {
       // Load animations
       const mixer = new THREE.AnimationMixer(avatar);
       const clips = gltf.animations;
-      const waveClip = THREE.AnimationClip.findByName(clips, 'Salute');
-      const stumbleClip = THREE.AnimationClip.findByName(clips, 'drunk.001');
-      const waveAction = mixer.clipAction(waveClip);
-      const stumbleAction = mixer.clipAction(stumbleClip);
+      const SaluteClip = THREE.AnimationClip.findByName(clips, 'Salute');
+      const DrunkClip = THREE.AnimationClip.findByName(clips, 'drunk.001');
+      const SaluteAction = mixer.clipAction(SaluteClip);
+      const DrunkAction = mixer.clipAction(DrunkClip);
 
-      let isStumbling = false;
+      let isDrunk = false;
       const raycaster = new THREE.Raycaster();
       container.addEventListener('mousedown', (ev) => {
         const coords = {
@@ -111,18 +109,18 @@ export default function Avatar() {
         const intersections = raycaster.intersectObject(avatar);
     
         if (intersections.length > 0) {
-          if (isStumbling) return;
+          if (isDrunk) return;
 
-          isStumbling = true;
-          stumbleAction.reset();
-          stumbleAction.play();
-          waveAction.crossFadeTo(stumbleAction, 0.3);
+          isDrunk = true;
+          DrunkAction.reset();
+          DrunkAction.play();
+          SaluteAction.crossFadeTo(DrunkAction, 0.3);
 
           setTimeout(() => {
-            waveAction.reset();
-            waveAction.play();
-            stumbleAction.crossFadeTo(waveAction, 1);
-            setTimeout(() => isStumbling = false, 1000);
+            SaluteAction.reset();
+            SaluteAction.play();
+            DrunkAction.crossFadeTo(SaluteAction, 1);
+            setTimeout(() => isDrunk = false, 1000);
           }, 4000)
         }
       });
@@ -141,7 +139,7 @@ export default function Avatar() {
       }
 
       animate();
-      waveAction.play();
+      SaluteAction.play();
   }
 
 
