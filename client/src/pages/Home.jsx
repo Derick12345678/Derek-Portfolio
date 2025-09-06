@@ -3,11 +3,14 @@ import Avatar from "../components/avatar";
 
 export default function Home() {
   return (
-    <div>
+    <section>
       <Header />
-      <div className="content">
-        <Avatar />
-      </div>
-    </div>
+      <Avatar />
+      <h1>
+        I’m <span className="gradient-text">Derek Gallagher</span>
+      </h1>
+      <p>This is my website, I will think of something to write here later</p>
+    </section>
   );
 }
+
