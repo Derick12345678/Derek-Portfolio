@@ -1,11 +1,18 @@
+import Header from "../components/header";
+import AboutMe from "../components/aboutme";
+import Education from "../components/education";
+import Hobbies from "../components/hobbies";
+
 export default function About() {
   return (
     <section>
-
-      <h1>
-        I’m <span className="gradient-text">Derek Gallagher</span>
-      </h1>
-      <p>This is my website, I will think of something to write here later</p>
+      <Header />
+      <h1>About me</h1>
+      <AboutMe />
+      <h2>Education</h2>
+      <Education />
+      <h2>Hobbies</h2>
+      <Hobbies />
     </section>
   );
 }

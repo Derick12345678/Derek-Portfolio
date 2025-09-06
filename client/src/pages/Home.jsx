@@ -5,11 +5,12 @@ export default function Home() {
   return (
     <section>
       <Header />
-      <Avatar />
+      <br></br>
       <h1>
         I’m <span className="gradient-text">Derek Gallagher</span>
       </h1>
-      <p>This is my website, I will think of something to write here later</p>
+      <p>This is my website, feel free to take a look!</p>
+            <Avatar />
     </section>
   );
 }
