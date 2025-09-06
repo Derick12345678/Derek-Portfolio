@@ -5,8 +5,11 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 export default function Avatar() {
   const containerRef = useRef();
+  const initialized = useRef(false);
 
   useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
     // Basic scene setup
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
