@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -26,42 +25,37 @@ export default function Avatar() {
   }
 
   function setupScene(gltf) {
-    const renderer = new THREE.WebGLRenderer({ 
-      antialias: true, 
-      alpha: true 
-    });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.outputColorSpace = THREE.SRGBColorSpace;
 
     const container = document.getElementById('avatar-container');
     container.style.width = "100vw";
-    container.style.height = "90vh";
+    container.style.height = "100vh";
 
     renderer.setSize(window.innerWidth, window.innerHeight * 0.9);
     renderer.setPixelRatio(window.devicePixelRatio);
-
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     container.appendChild(renderer.domElement);
 
     // Camera setup
-    const camera = new THREE.PerspectiveCamera(
-      45, 
-      window.innerWidth / (window.innerHeight * 0.9)
-    );
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / (window.innerHeight * 0.9), 0.1, 1000);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.enablePan = true;
     controls.enableZoom = true;
-    controls.autoRotate = false;
-    controls.autoRotateSpeed = 2.0;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 2;
 
+    controls.minDistance = 3;
+    controls.maxDistance = 10;
     // Scene setup
     const scene = new THREE.Scene();
 
     // Lighting setup
-    scene.add(new THREE.AmbientLight());
+    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
 
     const spotlight = new THREE.SpotLight(0xffffff, 20, 8, 1);
     spotlight.penumbra = 0.5;
@@ -84,21 +78,30 @@ export default function Avatar() {
     });
     scene.add(avatar);
 
-    // --- Fit camera to model ---
-    const box = new THREE.Box3().setFromObject(avatar);
-    const size = new THREE.Vector3();
-    box.getSize(size);
-    const center = new THREE.Vector3();
-    box.getCenter(center);
+    // --- Fit camera to model helper ---
+    function fitCameraToObject(obj, zoomFactor = 0.7) {
+      const box = new THREE.Box3().setFromObject(obj);
+      const size = new THREE.Vector3();
+      box.getSize(size);
+      const center = new THREE.Vector3();
+      box.getCenter(center);
 
-    const maxDim = Math.max(size.x, size.y, size.z);
-    const fov = camera.fov * (Math.PI / 180);
-    let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const fov = camera.fov * (Math.PI / 180);
+      let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
 
-    camera.position.set(center.x, center.y + size.y * 0.5, cameraZ * 1.5);
-    camera.lookAt(center);
-    controls.target.copy(center);
-    controls.update();
+      cameraZ *= zoomFactor; // adjust zoom (smaller = closer)
+
+      // More natural front-facing angle (slightly above)
+      camera.position.set(center.x, center.y + size.y * 0.2, cameraZ);
+      camera.lookAt(center);
+
+      controls.target.copy(center);
+      controls.update();
+    }
+
+    // Initial fit
+    fitCameraToObject(avatar, 0.6);
 
     // --- Auto-rotate on idle ---
     let idleTimeout;
@@ -108,9 +111,9 @@ export default function Avatar() {
     function resetIdleTimer() {
       controls.autoRotate = false;
       clearTimeout(idleTimeout);
-      idleTimeout = setTimeout(setIdleRotation, 3000); // 3s idle
+      idleTimeout = setTimeout(setIdleRotation, 2000);
     }
-    ["scroll", "mousedown", "wheel", "mousemove"].forEach(evt => {
+    ["scroll", "mousedown", "wheel"].forEach(evt => {
       window.addEventListener(evt, resetIdleTimer);
     });
     resetIdleTimer();
@@ -151,11 +154,12 @@ export default function Avatar() {
       }
     });
 
-    // Handle window resize
+    // Handle window resize → refit camera so model always stays correct
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / (window.innerHeight * 0.9);
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight * 0.9);
+      fitCameraToObject(avatar, 0.6);
     });
 
     const clock = new THREE.Clock();
@@ -170,13 +174,9 @@ export default function Avatar() {
     SaluteAction.play();
   }
 
-
-
-
   return(      
     <div id='avatar-container'>
-        <div id='avatar-loading'></div>
+      <div id='avatar-loading'></div>
     </div>
   );
-
 }
