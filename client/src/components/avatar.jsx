@@ -9,18 +9,8 @@ export default function Avatar() {
   function loadModel() {
     const loader = new GLTFLoader();
     loader.load('HomePage.glb',
-      (gltf) => {
-        setupScene(gltf);
-        document.getElementById('avatar-loading').style.display = 'none';
-      }, 
-      (xhr) => {
-        const percentCompletion = Math.round((xhr.loaded / xhr.total) * 100);
-        document.getElementById('avatar-loading').innerText = `LOADING... ${percentCompletion}%`
-        console.log(`Loading model... ${percentCompletion}%`);
-      }, 
-      (error) => {
-        console.log(error);
-      }
+      (gltf) => {setupScene(gltf)}, 
+      (error) => {console.log(error)}
     );
   }
 
@@ -29,8 +19,6 @@ export default function Avatar() {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
 
     const container = document.getElementById('avatar-container');
-    container.style.width = "100vw";
-    container.style.height = "100vh";
 
     renderer.setSize(window.innerWidth, window.innerHeight * 0.9);
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -46,11 +34,13 @@ export default function Avatar() {
     controls.enableDamping = true;
     controls.enablePan = true;
     controls.enableZoom = true;
+    
     controls.autoRotate = true;
     controls.autoRotateSpeed = 2;
 
-    controls.minDistance = 3;
+    controls.minDistance = 4.5;
     controls.maxDistance = 10;
+    
     // Scene setup
     const scene = new THREE.Scene();
 
