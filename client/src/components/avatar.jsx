@@ -69,6 +69,46 @@ export default function Avatar() {
     });
     scene.add(avatar);
 
+    function focusCameraOnObject(obj, zoomFactor = 1.5) {
+      const box = new THREE.Box3().setFromObject(obj);
+      const size = new THREE.Vector3();
+      box.getSize(size);
+      const center = new THREE.Vector3();
+      box.getCenter(center);
+
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const fov = camera.fov * (Math.PI / 180);
+      let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+
+      cameraZ *= zoomFactor;
+
+      // Animate camera position
+      new THREE.Vector3().copy(camera.position).lerp(
+        new THREE.Vector3(center.x, center.y + size.y * 0.5, cameraZ), 1 
+);
+
+      const start = camera.position.clone();
+      const end = new THREE.Vector3(center.x, center.y + size.y * 0.5, center.z - cameraZ);
+      let t = 0;
+
+      function animateCamera() {
+        if (t < 1) {
+          t += 0.02; // speed
+          camera.position.lerpVectors(start, end, t);
+          camera.lookAt(center);
+          requestAnimationFrame(animateCamera);
+        }
+      }
+      animateCamera();
+      camera.lookAt(center);
+
+      // Stop orbit controls rotation
+      controls.autoRotate = false;
+      controls.target.copy(center);
+      controls.update();
+    }
+
+
     // --- Fit camera to model helper ---
     function fitCameraToObject(obj, zoomFactor = 0.7) {
       const box = new THREE.Box3().setFromObject(obj);
@@ -181,6 +221,20 @@ export default function Avatar() {
       }
     });
 
+    let githubMesh = null;
+
+    avatar.traverse((child) => {
+      if (child.isMesh && child.name === "Github") {
+        githubMesh = child;
+      }
+    });
+
+    // When "Contact" button in header is clicked
+    document.getElementById("contact-btn").addEventListener("click", () => {
+      if (githubMesh) {
+        focusCameraOnObject(githubMesh, 2); // zoom factor adjusts how close
+      }
+    });
 
     // Handle window resize → refit camera so model always stays correct
     window.addEventListener('resize', () => {
