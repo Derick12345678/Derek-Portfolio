@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { CSS2DRenderer, CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 import '../home.css';
 
 export default function Avatar() {
@@ -17,12 +16,13 @@ export default function Avatar() {
 
   function setupScene(gltf) {
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-
     const container = document.getElementById('avatar-container');
 
+    //sets initial size
     renderer.setSize(window.innerWidth, window.innerHeight * 0.9);
     renderer.setPixelRatio(window.devicePixelRatio);
+    
+    //shadows
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
@@ -30,16 +30,14 @@ export default function Avatar() {
 
     // Camera setup
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth / (window.innerHeight * 0.9), 0.1, 1000);
-
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.enablePan = true;
     controls.enableZoom = true;
-    
+
+    //FIGURE OUT HOW TO CUSTOMIZE THIS FOR THE DIFFERENT VIEWS
     controls.autoRotate = true;
     controls.autoRotateSpeed = 2;
-
-    controls.minDistance = 0.5;
+    controls.minDistance = 0.7;
     controls.maxDistance = 10;
     
     // Scene setup
@@ -69,13 +67,15 @@ export default function Avatar() {
     });
     scene.add(avatar);
 
-    function focusCameraOnObject(obj, zoomFactor = 1.5) {
+    //Function used for the different camera views
+    function focusCameraOnObject(obj, zoomFactor) {
       const box = new THREE.Box3().setFromObject(obj);
       const size = new THREE.Vector3();
-      box.getSize(size);
       const center = new THREE.Vector3();
+      box.getSize(size);
       box.getCenter(center);
 
+      //FIGURE OUT HOW TO DO THIS WITHOUT ALL THE MATH MAYBE
       const maxDim = Math.max(size.x, size.y, size.z);
       const fov = camera.fov * (Math.PI / 180);
       let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
@@ -85,15 +85,15 @@ export default function Avatar() {
       // Animate camera position
       new THREE.Vector3().copy(camera.position).lerp(
         new THREE.Vector3(center.x, center.y + size.y * 0.5, cameraZ), 1 
-);
+      );
 
       const start = camera.position.clone();
-      const end = new THREE.Vector3(center.x, center.y + size.y * 0.5, center.z - cameraZ);
+      const end = new THREE.Vector3(center.x, center.y, center.z);
       let t = 0;
 
       function animateCamera() {
         if (t < 1) {
-          t += 0.02; // speed
+          t += 0.02;
           camera.position.lerpVectors(start, end, t);
           camera.lookAt(center);
           requestAnimationFrame(animateCamera);
@@ -102,15 +102,14 @@ export default function Avatar() {
       animateCamera();
       camera.lookAt(center);
 
-      // Stop orbit controls rotation
-      controls.autoRotate = false;
+      controls.autoRotateSpeed = 0;
+      controls.enabled = false;
       controls.target.copy(center);
       controls.update();
     }
 
-
     // --- Fit camera to model helper ---
-    function fitCameraToObject(obj, zoomFactor = 0.7) {
+    function fitCameraToObject(obj, zoomFactor) {
       const box = new THREE.Box3().setFromObject(obj);
       const size = new THREE.Vector3();
       box.getSize(size);
@@ -136,9 +135,7 @@ export default function Avatar() {
 
     // --- Auto-rotate on idle ---
     let idleTimeout;
-    function setIdleRotation() {
-      controls.autoRotate = true;
-    }
+    function setIdleRotation() { controls.autoRotate = true;}
     function resetIdleTimer() {
       controls.autoRotate = false;
       clearTimeout(idleTimeout);
@@ -211,9 +208,9 @@ export default function Avatar() {
       if (intersects.length > 0) {
         const clicked = intersects[0].object;
 
-        if (clicked.name === "Github") {
+        if (clicked.name === "LinkedIn") {
           window.open("https://github.com/Derick12345678", "_blank");
-        } else if (clicked.name === "LinkedIn") {
+        } else if (clicked.name === "Github") {
           window.open("https://www.linkedin.com/in/derekgallagher1", "_blank");
         } else if (clicked.name === "Email") {
           window.open("mailto:derekgallagher01@email.com", "_blank");
@@ -232,7 +229,7 @@ export default function Avatar() {
     // When "Contact" button in header is clicked
     document.getElementById("contact-btn").addEventListener("click", () => {
       if (githubMesh) {
-        focusCameraOnObject(githubMesh, 2); // zoom factor adjusts how close
+        focusCameraOnObject(githubMesh); // zoom factor adjusts how close
       }
     });
 
