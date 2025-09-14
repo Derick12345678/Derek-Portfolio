@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import "../App.css";
 
 export default function Header() {
@@ -6,9 +5,9 @@ export default function Header() {
     <header>
       <nav>
         <ul>
-          <li><Link to="/">Home</Link></li>
-          <li><Link to="/about">About Me</Link></li>
-          <li><Link to="/projects">Projects</Link></li>
+          <li><button type="button" id="home-btn">Home</button></li>
+          <li><button type="button" id="aboutme-btn">About Me</button></li>
+          <li><button type="button" id="projects-btn">Projects</button></li>
           <li><button type="button" id="contact-btn">Contact</button></li>
         </ul>
       </nav>

@@ -39,7 +39,7 @@ export default function Avatar() {
     controls.autoRotate = true;
     controls.autoRotateSpeed = 2;
 
-    controls.minDistance = 4.5;
+    controls.minDistance = 0.5;
     controls.maxDistance = 10;
     
     // Scene setup
