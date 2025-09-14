@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { CSS2DRenderer, CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 import '../home.css';
 
 export default function Avatar() {
@@ -143,6 +144,43 @@ export default function Avatar() {
         }, 4000)
       }
     });
+
+    // --- Find clickable meshes ---
+    const clickableMeshes = {};
+
+    avatar.traverse((child) => {
+      if (child.isMesh) {
+        if (child.name === "Github") clickableMeshes.Github = child;
+        if (child.name === "LinkedIn") clickableMeshes.LinkedIn = child;
+        if (child.name === "Email") clickableMeshes.Email = child;
+      }
+    });
+
+    const mouse = new THREE.Vector2();
+
+    container.addEventListener("mousedown", (event) => {
+      // Convert mouse position to normalized device coords
+      mouse.x = (event.offsetX / container.clientWidth) * 2 - 1;
+      mouse.y = -(event.offsetY / container.clientHeight) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+
+      // Intersect only with the clickable meshes
+      const intersects = raycaster.intersectObjects(Object.values(clickableMeshes));
+
+      if (intersects.length > 0) {
+        const clicked = intersects[0].object;
+
+        if (clicked.name === "Github") {
+          window.open("https://github.com/Derick12345678", "_blank");
+        } else if (clicked.name === "LinkedIn") {
+          window.open("https://www.linkedin.com/in/derekgallagher1", "_blank");
+        } else if (clicked.name === "Email") {
+          window.open("mailto:derekgallagher01@email.com", "_blank");
+        }
+      }
+    });
+
 
     // Handle window resize → refit camera so model always stays correct
     window.addEventListener('resize', () => {
