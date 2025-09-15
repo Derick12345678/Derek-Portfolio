@@ -182,7 +182,8 @@ export default function Avatar() {
       }
     });
 
-    // --- Find clickable meshes ---
+
+    //find rock names
     const clickableMeshes = {};
 
     avatar.traverse((child) => {
@@ -208,13 +209,10 @@ export default function Avatar() {
       if (intersects.length > 0) {
         const clicked = intersects[0].object;
 
-        if (clicked.name === "LinkedIn") {
-          window.open("https://github.com/Derick12345678", "_blank");
-        } else if (clicked.name === "Github") {
-          window.open("https://www.linkedin.com/in/derekgallagher1", "_blank");
-        } else if (clicked.name === "Email") {
-          window.open("mailto:derekgallagher01@email.com", "_blank");
-        }
+        if (clicked.name === "LinkedIn") window.open("https://github.com/Derick12345678", "_blank");
+        else if (clicked.name === "Github") window.open("https://www.linkedin.com/in/derekgallagher1", "_blank");
+        else if (clicked.name === "Email") window.open("mailto:derekgallagher01@email.com", "_blank");
+        
       }
     });
 
@@ -233,7 +231,7 @@ export default function Avatar() {
       }
     });
 
-    // Handle window resize → refit camera so model always stays correct
+    // Handle window resize, refit camera so model always stays correct
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / (window.innerHeight * 0.9);
       camera.updateProjectionMatrix();
