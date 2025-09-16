@@ -68,7 +68,7 @@ export default function Avatar() {
     scene.add(avatar);
 
     //Function used for the different camera views
-    function focusCameraOnObject(obj, zoomFactor) {
+    function focusCameraOnObject(obj, zoomFactor = 1.2) {
       const box = new THREE.Box3().setFromObject(obj);
       const size = new THREE.Vector3();
       const center = new THREE.Vector3();
@@ -82,10 +82,6 @@ export default function Avatar() {
 
       cameraZ *= zoomFactor;
 
-      // Animate camera position
-      new THREE.Vector3().copy(camera.position).lerp(
-        new THREE.Vector3(center.x, center.y + size.y * 0.5, cameraZ), 1 
-      );
 
       const start = camera.position.clone();
       const end = new THREE.Vector3(center.x, center.y, center.z);
@@ -100,15 +96,13 @@ export default function Avatar() {
         }
       }
       animateCamera();
-      camera.lookAt(center);
+      //camera.lookAt(center);
 
-      controls.autoRotateSpeed = 0;
-      controls.enabled = false;
       controls.target.copy(center);
       controls.update();
     }
 
-    // --- Fit camera to model helper ---
+    // Used for the initial view
     function fitCameraToObject(obj, zoomFactor) {
       const box = new THREE.Box3().setFromObject(obj);
       const size = new THREE.Vector3();
@@ -224,12 +218,36 @@ export default function Avatar() {
       }
     });
 
-    // When "Contact" button in header is clicked
-    document.getElementById("contact-btn").addEventListener("click", () => {
+    function goHome() {
+      fitCameraToObject(avatar, 0.6);
+      controls.autoRotateSpeed = 2;
+      controls.enabled = true;
+      controls.update();
+    }
+
+    function goAboutMe() {
+      console.log("About Me view not yet implemented");
+    }
+
+    function goProjects() {
+      console.log("Projects view not yet implemented");
+    }
+
+    function goContact() {
       if (githubMesh) {
-        focusCameraOnObject(githubMesh); // zoom factor adjusts how close
+        focusCameraOnObject(githubMesh, 1.2);
+        controls.autoRotateSpeed = 0;
+        controls.enabled = false;
+        controls.update();
       }
-    });
+    }
+
+    document.getElementById("home-btn").addEventListener("click", goHome);
+    document.getElementById("aboutme-btn").addEventListener("click", goAboutMe);
+    document.getElementById("projects-btn").addEventListener("click", goProjects);
+    document.getElementById("contact-btn").addEventListener("click", goContact);
+
+    goHome();
 
     // Handle window resize, refit camera so model always stays correct
     window.addEventListener('resize', () => {
