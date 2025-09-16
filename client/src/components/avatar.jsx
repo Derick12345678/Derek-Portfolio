@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { gsap } from "gsap";
 import '../home.css';
 
 export default function Avatar() {
@@ -135,6 +136,26 @@ export default function Avatar() {
       }
     });
 
+    function transitionCamera(camera, controls, pos, target, duration = 2) {
+      gsap.to(camera.position, {
+        duration,
+        x: pos.x,
+        y: pos.y,
+        z: pos.z,
+        onUpdate: () => controls.update(),
+        ease: "power2.inOut"
+      });
+
+      gsap.to(controls.target, {
+        duration,
+        x: target.x,
+        y: target.y,
+        z: target.z,
+        onUpdate: () => controls.update(),
+        ease: "power2.inOut"
+      });
+    }
+
     function goHome() {
       controls.autoRotate = true;
       controls.autoRotateSpeed = 2;
@@ -152,7 +173,7 @@ export default function Avatar() {
       controls.maxDistance = 2.65;
       controls.minDistance = 2.4;
       controls.autoRotateSpeed = 0;
-      controls.enabled = true;
+      controls.enabled = false;
       controls.update();
       camera.position.set(3.0,0.3,0);
       controls.target.set(0.77, 0.46, -1.47);
