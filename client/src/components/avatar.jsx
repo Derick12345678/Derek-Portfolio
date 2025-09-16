@@ -18,40 +18,24 @@ export default function Avatar() {
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     const container = document.getElementById('avatar-container');
 
-    //sets initial size
+    //sets initial size and shadow properties
     renderer.setSize(window.innerWidth, window.innerHeight * 0.9);
     renderer.setPixelRatio(window.devicePixelRatio);
-    
-    //shadows
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     container.appendChild(renderer.domElement);
 
-    // Camera setup
+    // Camera, scene and lighting setup
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth / (window.innerHeight * 0.9), 0.1, 1000);
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.enableZoom = true;
-
-    //Rotate and zoom in
-    controls.autoRotate = true;
-    controls.autoRotateSpeed = 2;
-    controls.minDistance = 0.7;
-    controls.maxDistance = 10;
-    
-    // Scene setup
     const scene = new THREE.Scene();
-
-    // Lighting setup
     scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-
     const spotlight = new THREE.SpotLight(0xffffff, 20, 8, 1);
     spotlight.penumbra = 0.5;
     spotlight.position.set(0, 4, 2);
     spotlight.castShadow = true;
     scene.add(spotlight);
-
     const keyLight = new THREE.DirectionalLight(0xffffff, 2);
     keyLight.position.set(1, 1, 2);
     keyLight.lookAt(new THREE.Vector3());
@@ -66,29 +50,7 @@ export default function Avatar() {
       }
     });
     scene.add(avatar);
-
-    // Used for the initial view
-    function fitCameraToObject(obj, zoomFactor) {
-      const box = new THREE.Box3().setFromObject(obj);
-      const size = new THREE.Vector3();
-      box.getSize(size);
-      const center = new THREE.Vector3();
-      box.getCenter(center);
-
-      const maxDim = Math.max(size.x, size.y, size.z);
-      const fov = camera.fov * (Math.PI / 180);
-      let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
-
-      cameraZ *= zoomFactor; // adjust zoom (smaller = closer)
-
-      // More natural front-facing angle (slightly above)
-      camera.position.set(center.x, center.y + size.y * 0.2, cameraZ);
-      camera.lookAt(center);
-
-      controls.target.copy(center);
-      controls.update();
-    }
-    fitCameraToObject(avatar, 0.6);
+   
 
     //Logic to rotate around the island (home)
     let idleTimeout;
@@ -174,18 +136,29 @@ export default function Avatar() {
     });
 
     function goHome() {
-      fitCameraToObject(avatar, 0.6);
+      controls.autoRotate = true;
       controls.autoRotateSpeed = 2;
       controls.enabled = true;
+      controls.minDistance = 4.3;
+      controls.maxDistance = 10;
+      controls.enableDamping = true;
+      controls.enableZoom = true;
       controls.update();
+      controls.target.set(0.77, 0.46, -1.47);
+      camera.position.set(0.77,1.3,4.8);
     }
 
     function goAboutMe() {
-      camera.position.set(3.0,0.3,0);
-      //FIGURE OUT HOW TO CHANGE THE VIEW
+      controls.maxDistance = 2.65;
+      controls.minDistance = 2.4;
       controls.autoRotateSpeed = 0;
-      controls.enabled = false;
+      controls.enabled = true;
       controls.update();
+      camera.position.set(3.0,0.3,0);
+      controls.target.set(0.77, 0.46, -1.47);
+      //THINGS TO WORK ON: Change controls to limit how far you can rotate the camera up/down and left/right
+      //Also make the scroll controls smoother
+      //Also figure out how to transition the camera to the new position instead of jumping
     }
 
     function goProjects() {
@@ -193,8 +166,10 @@ export default function Avatar() {
     }
 
     function goContact() {
-      camera.position.set(-1.5,0.45,-4.8);
-      //FIGURE OUT HOW TO CHANGE THE VIEW
+      camera.position.set(-1.2,0.45,-4);
+      controls.target.set(-0.9, 0.35, -1.3);
+      controls.minDistance = 3;
+      controls.maxDistance = 3;
       controls.autoRotateSpeed = 0;
       controls.enabled = false;
       controls.update();
@@ -212,7 +187,8 @@ export default function Avatar() {
       camera.aspect = window.innerWidth / (window.innerHeight * 0.9);
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight * 0.9);
-      fitCameraToObject(avatar, 0.6);
+      controls.target.set(0.77, 0.46, -1.47);
+      camera.position.set(0.77,1.3,4.8);
     });
 
     const clock = new THREE.Clock();

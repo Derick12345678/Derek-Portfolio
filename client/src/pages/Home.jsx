@@ -6,6 +6,7 @@ export default function Home() {
     <section>
       <Header />
       <Avatar />
+      <footer className="footer"> Designed by Derek Gallagher</footer>
     </section>
   );
 }
