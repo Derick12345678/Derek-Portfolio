@@ -34,7 +34,7 @@ export default function Avatar() {
     controls.enableDamping = true;
     controls.enableZoom = true;
 
-    //FIGURE OUT HOW TO CUSTOMIZE THIS FOR THE DIFFERENT VIEWS
+    //Rotate and zoom in
     controls.autoRotate = true;
     controls.autoRotateSpeed = 2;
     controls.minDistance = 0.7;
@@ -67,41 +67,6 @@ export default function Avatar() {
     });
     scene.add(avatar);
 
-    //Function used for the different camera views
-    function focusCameraOnObject(obj, zoomFactor = 1.2) {
-      const box = new THREE.Box3().setFromObject(obj);
-      const size = new THREE.Vector3();
-      const center = new THREE.Vector3();
-      box.getSize(size);
-      box.getCenter(center);
-
-      //FIGURE OUT HOW TO DO THIS WITHOUT ALL THE MATH MAYBE
-      const maxDim = Math.max(size.x, size.y, size.z);
-      const fov = camera.fov * (Math.PI / 180);
-      let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
-
-      cameraZ *= zoomFactor;
-
-
-      const start = camera.position.clone();
-      const end = new THREE.Vector3(center.x, center.y, center.z);
-      let t = 0;
-
-      function animateCamera() {
-        if (t < 1) {
-          t += 0.02;
-          camera.position.lerpVectors(start, end, t);
-          camera.lookAt(center);
-          requestAnimationFrame(animateCamera);
-        }
-      }
-      animateCamera();
-      //camera.lookAt(center);
-
-      controls.target.copy(center);
-      controls.update();
-    }
-
     // Used for the initial view
     function fitCameraToObject(obj, zoomFactor) {
       const box = new THREE.Box3().setFromObject(obj);
@@ -123,11 +88,9 @@ export default function Avatar() {
       controls.target.copy(center);
       controls.update();
     }
-
-    // Initial fit
     fitCameraToObject(avatar, 0.6);
 
-    // --- Auto-rotate on idle ---
+    //Logic to rotate around the island (home)
     let idleTimeout;
     function setIdleRotation() { controls.autoRotate = true;}
     function resetIdleTimer() {
@@ -210,14 +173,6 @@ export default function Avatar() {
       }
     });
 
-    let githubMesh = null;
-
-    avatar.traverse((child) => {
-      if (child.isMesh && child.name === "Github") {
-        githubMesh = child;
-      }
-    });
-
     function goHome() {
       fitCameraToObject(avatar, 0.6);
       controls.autoRotateSpeed = 2;
@@ -226,7 +181,11 @@ export default function Avatar() {
     }
 
     function goAboutMe() {
-      console.log("About Me view not yet implemented");
+      camera.position.set(3.0,0.3,0);
+      //FIGURE OUT HOW TO CHANGE THE VIEW
+      controls.autoRotateSpeed = 0;
+      controls.enabled = false;
+      controls.update();
     }
 
     function goProjects() {
@@ -234,12 +193,11 @@ export default function Avatar() {
     }
 
     function goContact() {
-      if (githubMesh) {
-        focusCameraOnObject(githubMesh, 1.2);
-        controls.autoRotateSpeed = 0;
-        controls.enabled = false;
-        controls.update();
-      }
+      camera.position.set(-1.5,0.45,-4.8);
+      //FIGURE OUT HOW TO CHANGE THE VIEW
+      controls.autoRotateSpeed = 0;
+      controls.enabled = false;
+      controls.update();
     }
 
     document.getElementById("home-btn").addEventListener("click", goHome);
