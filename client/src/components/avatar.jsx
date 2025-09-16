@@ -187,8 +187,7 @@ export default function Avatar() {
       camera.aspect = window.innerWidth / (window.innerHeight * 0.9);
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight * 0.9);
-      controls.target.set(0.77, 0.46, -1.47);
-      camera.position.set(0.77,1.3,4.8);
+      goHome();
     });
 
     const clock = new THREE.Clock();
