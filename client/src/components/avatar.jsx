@@ -52,6 +52,36 @@ export default function Avatar() {
     });
     scene.add(avatar);
    
+    function TV(){
+      const screen = avatar.getObjectByName("screen");
+      if(screen){
+        const video = document.createElement("video");
+        video.src = "/CRM.mp4"; // stored in public folder
+        video.crossOrigin = "anonymous";
+        video.loop = true;
+        video.muted = true;       // required for autoplay
+        video.playsInline = true; // iOS fix
+        video.autoplay = true;
+
+        video.play().catch((err) => {
+          console.warn("Autoplay blocked. Will require user interaction:", err);
+        });
+
+        const videoTexture = new THREE.VideoTexture(video);
+        videoTexture.encoding = THREE.sRGBEncoding;
+        videoTexture.minFilter = THREE.LinearFilter;
+        videoTexture.magFilter = THREE.LinearFilter;
+        videoTexture.format = THREE.RGBAFormat;
+
+        screen.material = new THREE.MeshBasicMaterial({
+          map: videoTexture,
+          toneMapped: false,
+        });
+      } 
+      else{
+        console.warn("No mesh named 'screen' found in GLB");
+      }
+    }
 
     //Logic to rotate around the island (home)
     let idleTimeout;
@@ -142,8 +172,7 @@ export default function Avatar() {
         x: pos.x,
         y: pos.y,
         z: pos.z,
-        onUpdate: () => controls.update(),
-        ease: "power2.inOut"
+        ease: "power2.inOut",
       });
 
       gsap.to(controls.target, {
@@ -151,10 +180,10 @@ export default function Avatar() {
         x: target.x,
         y: target.y,
         z: target.z,
-        onUpdate: () => controls.update(),
-        ease: "power2.inOut"
+        ease: "power2.inOut",
       });
     }
+
 
     function goHome() {
       controls.autoRotate = true;
@@ -165,35 +194,32 @@ export default function Avatar() {
       controls.enableDamping = true;
       controls.enableZoom = true;
       controls.update();
-      controls.target.set(0.77, 0.46, -1.47);
-      camera.position.set(0.77,1.3,4.8);
+      transitionCamera(camera, controls, {x: 0.77, y: 1.3, z: 4.8}, { x: 0.77, y: 0.46, z: -1.47});
     }
 
     function goAboutMe() {
-      controls.maxDistance = 2.65;
-      controls.minDistance = 2.4;
+      controls.minDistance = 2.6;
       controls.autoRotateSpeed = 0;
       controls.enabled = false;
       controls.update();
-      camera.position.set(3.0,0.3,0);
-      controls.target.set(0.77, 0.46, -1.47);
-      //THINGS TO WORK ON: Change controls to limit how far you can rotate the camera up/down and left/right
-      //Also make the scroll controls smoother
-      //Also figure out how to transition the camera to the new position instead of jumping
+      transitionCamera(camera, controls, {x: 3, y: 0.3, z: 0}, { x: 0.77, y: 0.46, z: -1.47});
     }
 
     function goProjects() {
-      console.log("Projects view not yet implemented");
-    }
-
-    function goContact() {
-      camera.position.set(-1.2,0.45,-4);
-      controls.target.set(-0.9, 0.35, -1.3);
-      controls.minDistance = 3;
-      controls.maxDistance = 3;
+      controls.minDistance = 3.3;
       controls.autoRotateSpeed = 0;
       controls.enabled = false;
       controls.update();
+      transitionCamera(camera, controls, {x: -1.3, y: 0.5, z: 0}, { x: 0.5, y: 0.46, z: -1.47});
+      TV();
+    }
+
+    function goContact() {
+      controls.minDistance = 3;
+      controls.autoRotateSpeed = 0;
+      controls.enabled = false;
+      controls.update();
+      transitionCamera(camera, controls, {x: -1.2, y: 0.45, z: -4}, { x: -0.9, y: 0.35, z: -1.3});
     }
 
     document.getElementById("home-btn").addEventListener("click", goHome);
