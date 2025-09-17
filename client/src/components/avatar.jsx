@@ -56,11 +56,11 @@ export default function Avatar() {
       const screen = avatar.getObjectByName("screen");
       if(screen){
         const video = document.createElement("video");
-        video.src = "/CRM.mp4"; // stored in public folder
+        video.src = "/CRM.mp4";
         video.crossOrigin = "anonymous";
         video.loop = true;
-        video.muted = true;       // required for autoplay
-        video.playsInline = true; // iOS fix
+        video.muted = true;       
+        video.playsInline = true;
         video.autoplay = true;
 
         video.play().catch((err) => {
@@ -78,9 +78,6 @@ export default function Avatar() {
           toneMapped: false,
         });
       } 
-      else{
-        console.warn("No mesh named 'screen' found in GLB");
-      }
     }
 
     //Logic to rotate around the island (home)
