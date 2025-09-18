@@ -203,11 +203,11 @@ export default function Avatar() {
     }
 
     function goProjects() {
-      controls.minDistance = 3.3;
+      controls.minDistance = 2.7;
       controls.autoRotateSpeed = 0;
       controls.enabled = false;
       controls.update();
-      transitionCamera(camera, controls, {x: -1.3, y: 0.5, z: 0}, { x: 0.5, y: 0.46, z: -1.47});
+      transitionCamera(camera, controls, {x: -1.3, y: 0.6, z: 0}, { x: 0.1, y: 0.46, z: -1.47});
       TV();
     }
 
