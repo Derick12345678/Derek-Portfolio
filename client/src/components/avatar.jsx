@@ -52,74 +52,105 @@ export default function Avatar() {
     });
     scene.add(avatar);
    
-function TV() {
-  const screen = avatar.getObjectByName("screen");
-  const upArrow = avatar.getObjectByName("uparrow");
-  const downArrow = avatar.getObjectByName("downarrow");
+    function TV() {
+      const screen = avatar.getObjectByName("screen");
+      const upArrow = avatar.getObjectByName("uparrow");
+      const downArrow = avatar.getObjectByName("downarrow");
 
-  if (screen) {
-    const movies = ["/Discord.mp4", "/CRM.mp4"];
-    let currentMovieIndex = 0;
+      if (screen && upArrow && downArrow) {
+        const movies = ["/Discord.mp4", "/CRM.mp4"];
+        let currentMovieIndex = 0;
 
-    const video = document.createElement("video");
-    video.src = movies[currentMovieIndex];
-    video.crossOrigin = "anonymous";
-    video.loop = true;
-    video.muted = true;
-    video.playsInline = true;
-    video.autoplay = true;
+        const video = document.createElement("video");
+        video.src = movies[currentMovieIndex];
+        video.crossOrigin = "anonymous";
+        video.loop = true;
+        video.muted = true;
+        video.playsInline = true;
+        video.autoplay = true;
 
-    video.play().catch((err) => {
-      console.warn("Autoplay blocked. Will require user interaction:", err);
-    });
+        video.play().catch((err) => {
+          console.warn("Autoplay blocked. Will require user interaction:", err);
+        });
 
-    const videoTexture = new THREE.VideoTexture(video);
-    videoTexture.encoding = THREE.sRGBEncoding;
-    videoTexture.minFilter = THREE.LinearFilter;
-    videoTexture.magFilter = THREE.LinearFilter;
-    videoTexture.format = THREE.RGBAFormat;
-    videoTexture.flipY = false;
+        const videoTexture = new THREE.VideoTexture(video);
+        videoTexture.encoding = THREE.sRGBEncoding;
+        videoTexture.minFilter = THREE.LinearFilter;
+        videoTexture.magFilter = THREE.LinearFilter;
+        videoTexture.format = THREE.RGBAFormat;
+        videoTexture.flipY = false;
 
-    screen.material = new THREE.MeshBasicMaterial({
-      map: videoTexture,
-      toneMapped: false,
-    });
+        screen.material = new THREE.MeshBasicMaterial({
+          map: videoTexture,
+          toneMapped: false,
+        });
 
-    // Function to switch videos
-    function changeMovie(next) {
-      if(next) {
-        currentMovieIndex = (currentMovieIndex + 1) % movies.length;
-      } 
-      else{
-        currentMovieIndex = (currentMovieIndex - 1 + movies.length) % movies.length;
-      }
+        upArrow.material = upArrow.material.clone();
+        downArrow.material = downArrow.material.clone();
 
-      video.src = movies[currentMovieIndex];
-      video.play();
-    }
+        // Save original colors
+        const upArrowOriginal = upArrow.material.color.clone();
+        const downArrowOriginal = downArrow.material.color.clone();
 
-    const raycaster = new THREE.Raycaster();
-    const pointer = new THREE.Vector2();
-
-    function onClick(event) {
-      const rect = renderer.domElement.getBoundingClientRect();
-      pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-      raycaster.setFromCamera(pointer, camera);
-      const intersects = raycaster.intersectObjects([upArrow, downArrow]);
-
-      if (intersects.length > 0) {
-        if (intersects[0].object === upArrow) {
-          changeMovie(true);
-        } else if (intersects[0].object === downArrow) {
-          changeMovie(false);
+        function changeMovie(next) {
+          if (next) {
+            currentMovieIndex = (currentMovieIndex + 1) % movies.length;
+          } else {
+            currentMovieIndex =
+              (currentMovieIndex - 1 + movies.length) % movies.length;
+          }
+          video.src = movies[currentMovieIndex];
+          video.play();
         }
+
+        const raycaster = new THREE.Raycaster();
+        const pointer = new THREE.Vector2();
+        let hovered = null;
+
+        function onMouseMove(event) {
+          const rect = renderer.domElement.getBoundingClientRect();
+          pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+          pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+          raycaster.setFromCamera(pointer, camera);
+          const intersects = raycaster.intersectObjects([upArrow, downArrow]);
+
+          if (intersects.length > 0) {
+            const target = intersects[0].object;
+            if (hovered !== target) {
+              hovered = target;
+              renderer.domElement.style.cursor = "pointer";
+            }
+          } else {
+            hovered = null;
+            renderer.domElement.style.cursor = "default";
+          }
+        }
+
+        function onClick() {
+          if (hovered === upArrow) {
+            changeMovie(true);
+            flashArrow(upArrow, upArrowOriginal);
+          } else if (hovered === downArrow) {
+            changeMovie(false);
+            flashArrow(downArrow, downArrowOriginal);
+          }
+        }
+
+        function flashArrow(arrow, originalColor) {
+          arrow.material.color.set("yellow");
+          setTimeout(() => {
+            arrow.material.color.copy(originalColor);
+          }, 200);
+        }
+
+        window.addEventListener("mousemove", onMouseMove);
+        window.addEventListener("click", onClick);
+    
+        TV._video = video;
+        TV._screen = screen;
       }
     }
-    window.addEventListener("click", onClick);
-  }
-}
 
     //Logic to rotate around the island (home)
     let idleTimeout;
@@ -171,9 +202,7 @@ function TV() {
     });
 
 
-    //find rock names
     const clickableMeshes = {};
-
     avatar.traverse((child) => {
       if (child.isMesh) {
         if (child.name === "Github") clickableMeshes.Github = child;
@@ -253,7 +282,7 @@ function TV() {
     }
 
     function goContact() {
-      controls.minDistance = 3;
+      controls.minDistance = 2.9;
       controls.autoRotateSpeed = 0;
       controls.enabled = false;
       controls.update();
@@ -293,3 +322,7 @@ function TV() {
     </div>
   );
 }
+//TODO: fix resize for mobile devices.
+//TODO: create tv2() function to turn off tv
+//TODO: add all videos
+//TODO: fix sign to make more readable
