@@ -52,33 +52,74 @@ export default function Avatar() {
     });
     scene.add(avatar);
    
-    function TV(){
-      const screen = avatar.getObjectByName("screen");
-      if(screen){
-        const video = document.createElement("video");
-        video.src = "/CRM.mp4";
-        video.crossOrigin = "anonymous";
-        video.loop = true;
-        video.muted = true;       
-        video.playsInline = true;
-        video.autoplay = true;
+function TV() {
+  const screen = avatar.getObjectByName("screen");
+  const upArrow = avatar.getObjectByName("uparrow");
+  const downArrow = avatar.getObjectByName("downarrow");
 
-        video.play().catch((err) => {
-          console.warn("Autoplay blocked. Will require user interaction:", err);
-        });
+  if (screen) {
+    const movies = ["/Discord.mp4", "/CRM.mp4"];
+    let currentMovieIndex = 0;
 
-        const videoTexture = new THREE.VideoTexture(video);
-        videoTexture.encoding = THREE.sRGBEncoding;
-        videoTexture.minFilter = THREE.LinearFilter;
-        videoTexture.magFilter = THREE.LinearFilter;
-        videoTexture.format = THREE.RGBAFormat;
+    const video = document.createElement("video");
+    video.src = movies[currentMovieIndex];
+    video.crossOrigin = "anonymous";
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.autoplay = true;
 
-        screen.material = new THREE.MeshBasicMaterial({
-          map: videoTexture,
-          toneMapped: false,
-        });
+    video.play().catch((err) => {
+      console.warn("Autoplay blocked. Will require user interaction:", err);
+    });
+
+    const videoTexture = new THREE.VideoTexture(video);
+    videoTexture.encoding = THREE.sRGBEncoding;
+    videoTexture.minFilter = THREE.LinearFilter;
+    videoTexture.magFilter = THREE.LinearFilter;
+    videoTexture.format = THREE.RGBAFormat;
+    videoTexture.flipY = false;
+
+    screen.material = new THREE.MeshBasicMaterial({
+      map: videoTexture,
+      toneMapped: false,
+    });
+
+    // Function to switch videos
+    function changeMovie(next) {
+      if(next) {
+        currentMovieIndex = (currentMovieIndex + 1) % movies.length;
       } 
+      else{
+        currentMovieIndex = (currentMovieIndex - 1 + movies.length) % movies.length;
+      }
+
+      video.src = movies[currentMovieIndex];
+      video.play();
     }
+
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+
+    function onClick(event) {
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(pointer, camera);
+      const intersects = raycaster.intersectObjects([upArrow, downArrow]);
+
+      if (intersects.length > 0) {
+        if (intersects[0].object === upArrow) {
+          changeMovie(true);
+        } else if (intersects[0].object === downArrow) {
+          changeMovie(false);
+        }
+      }
+    }
+    window.addEventListener("click", onClick);
+  }
+}
 
     //Logic to rotate around the island (home)
     let idleTimeout;
@@ -203,11 +244,11 @@ export default function Avatar() {
     }
 
     function goProjects() {
-      controls.minDistance = 2.7;
+      controls.minDistance = 2.05;
       controls.autoRotateSpeed = 0;
       controls.enabled = false;
       controls.update();
-      transitionCamera(camera, controls, {x: -1.3, y: 0.6, z: 0}, { x: 0.1, y: 0.46, z: -1.47});
+      transitionCamera(camera, controls, {x: -1.35, y: 0.625, z: 0}, { x:-0.6, y: 0.46, z: -1.47});
       TV();
     }
 
