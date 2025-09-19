@@ -58,7 +58,7 @@ export default function Avatar() {
       const downArrow = avatar.getObjectByName("downarrow");
 
       if (screen && upArrow && downArrow) {
-        const movies = ["/Discord.mp4", "/CRM.mp4"];
+        const movies = ["/Discord.mp4", "/CRM.mp4", "spaceus.mp4", "portfolio.mp4"];
         let currentMovieIndex = 0;
 
         const video = document.createElement("video");
@@ -324,5 +324,4 @@ export default function Avatar() {
 }
 //TODO: fix resize for mobile devices.
 //TODO: create tv2() function to turn off tv
-//TODO: add all videos
 //TODO: fix sign to make more readable
