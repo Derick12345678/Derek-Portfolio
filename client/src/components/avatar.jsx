@@ -11,7 +11,6 @@ export default function Avatar() {
     const loader = new GLTFLoader();
     loader.load('HomePage.glb',
       (gltf) => {setupScene(gltf)}, 
-      (error) => {console.log(error)}
     );
   }
 
@@ -52,105 +51,136 @@ export default function Avatar() {
     });
     scene.add(avatar);
    
-    function TV() {
-      const screen = avatar.getObjectByName("screen");
-      const upArrow = avatar.getObjectByName("uparrow");
-      const downArrow = avatar.getObjectByName("downarrow");
+function TV() {
+  const screen = avatar.getObjectByName("screen");
+  const upArrow = avatar.getObjectByName("uparrow");
+  const downArrow = avatar.getObjectByName("downarrow");
 
-      if (screen && upArrow && downArrow) {
-        const movies = ["/Discord.mp4", "/CRM.mp4", "spaceus.mp4", "portfolio.mp4"];
-        let currentMovieIndex = 0;
+  if (screen && upArrow && downArrow) {
+    const movies = ["/Discord.mp4", "/CRM.mp4", "spaceus.mp4", "portfolio.mp4"];
+    let currentMovieIndex = 0;
 
-        const video = document.createElement("video");
-        video.src = movies[currentMovieIndex];
-        video.crossOrigin = "anonymous";
-        video.loop = true;
-        video.muted = true;
-        video.playsInline = true;
-        video.autoplay = true;
+    const video = document.createElement("video");
+    video.src = movies[currentMovieIndex];
+    video.crossOrigin = "anonymous";
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.autoplay = true;
+    video.play();
 
-        video.play().catch((err) => {
-          console.warn("Autoplay blocked. Will require user interaction:", err);
-        });
+    const videoTexture = new THREE.VideoTexture(video);
+    videoTexture.encoding = THREE.sRGBEncoding;
+    videoTexture.minFilter = THREE.LinearFilter;
+    videoTexture.magFilter = THREE.LinearFilter;
+    videoTexture.format = THREE.RGBAFormat;
+    videoTexture.flipY = false;
 
-        const videoTexture = new THREE.VideoTexture(video);
-        videoTexture.encoding = THREE.sRGBEncoding;
-        videoTexture.minFilter = THREE.LinearFilter;
-        videoTexture.magFilter = THREE.LinearFilter;
-        videoTexture.format = THREE.RGBAFormat;
-        videoTexture.flipY = false;
+    // Save the original screen material BEFORE overwriting
+    if (!TV._originalScreenMaterial) {
+      TV._originalScreenMaterial = screen.material.clone();
+    }
 
-        screen.material = new THREE.MeshBasicMaterial({
-          map: videoTexture,
-          toneMapped: false,
-        });
+    screen.material = new THREE.MeshBasicMaterial({
+      map: videoTexture,
+      toneMapped: false,
+    });
 
-        upArrow.material = upArrow.material.clone();
-        downArrow.material = downArrow.material.clone();
+    upArrow.material = upArrow.material.clone();
+    downArrow.material = downArrow.material.clone();
 
-        // Save original colors
-        const upArrowOriginal = upArrow.material.color.clone();
-        const downArrowOriginal = downArrow.material.color.clone();
+    const upArrowOriginal = upArrow.material.color.clone();
+    const downArrowOriginal = downArrow.material.color.clone();
 
-        function changeMovie(next) {
-          if (next) {
-            currentMovieIndex = (currentMovieIndex + 1) % movies.length;
-          } else {
-            currentMovieIndex =
-              (currentMovieIndex - 1 + movies.length) % movies.length;
-          }
-          video.src = movies[currentMovieIndex];
-          video.play();
+    function changeMovie(next) {
+      if (next) {
+        currentMovieIndex = (currentMovieIndex + 1) % movies.length;
+      } else {
+        currentMovieIndex =
+          (currentMovieIndex - 1 + movies.length) % movies.length;
+      }
+      video.src = movies[currentMovieIndex];
+      video.play();
+    }
+
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    let hovered = null;
+
+    function onMouseMove(event) {
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(pointer, camera);
+      const intersects = raycaster.intersectObjects([upArrow, downArrow]);
+
+      if (intersects.length > 0) {
+        const target = intersects[0].object;
+        if (hovered !== target) {
+          hovered = target;
+          renderer.domElement.style.cursor = "pointer";
         }
-
-        const raycaster = new THREE.Raycaster();
-        const pointer = new THREE.Vector2();
-        let hovered = null;
-
-        function onMouseMove(event) {
-          const rect = renderer.domElement.getBoundingClientRect();
-          pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-          pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-          raycaster.setFromCamera(pointer, camera);
-          const intersects = raycaster.intersectObjects([upArrow, downArrow]);
-
-          if (intersects.length > 0) {
-            const target = intersects[0].object;
-            if (hovered !== target) {
-              hovered = target;
-              renderer.domElement.style.cursor = "pointer";
-            }
-          } else {
-            hovered = null;
-            renderer.domElement.style.cursor = "default";
-          }
-        }
-
-        function onClick() {
-          if (hovered === upArrow) {
-            changeMovie(true);
-            flashArrow(upArrow, upArrowOriginal);
-          } else if (hovered === downArrow) {
-            changeMovie(false);
-            flashArrow(downArrow, downArrowOriginal);
-          }
-        }
-
-        function flashArrow(arrow, originalColor) {
-          arrow.material.color.set("yellow");
-          setTimeout(() => {
-            arrow.material.color.copy(originalColor);
-          }, 200);
-        }
-
-        window.addEventListener("mousemove", onMouseMove);
-        window.addEventListener("click", onClick);
-    
-        TV._video = video;
-        TV._screen = screen;
+      } else {
+        hovered = null;
+        renderer.domElement.style.cursor = "default";
       }
     }
+
+    function onClick() {
+      if (hovered === upArrow) {
+        changeMovie(true);
+        flashArrow(upArrow, upArrowOriginal);
+      } else if (hovered === downArrow) {
+        changeMovie(false);
+        flashArrow(downArrow, downArrowOriginal);
+      }
+    }
+
+    function flashArrow(arrow, originalColor) {
+      arrow.material.color.set("yellow");
+      setTimeout(() => {
+        arrow.material.color.copy(originalColor);
+      }, 300);
+    }
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("click", onClick);
+
+    // Save references for cleanup
+    TV._video = video;
+    TV._screen = screen;
+    TV._onMouseMove = onMouseMove;
+    TV._onClick = onClick;
+  }
+}
+
+function tv2() {
+  if (TV._video) {
+    TV._video.pause();
+    TV._video.src = "";
+    TV._video.load();
+  }
+
+  // Restore the original material if we saved it
+  if (TV._screen && TV._originalScreenMaterial) {
+    TV._screen.material.dispose();
+    TV._screen.material = TV._originalScreenMaterial.clone();
+  }
+
+  // Remove event listeners
+  if (TV._onMouseMove) {
+    window.removeEventListener("mousemove", TV._onMouseMove);
+    TV._onMouseMove = null;
+  }
+  if (TV._onClick) {
+    window.removeEventListener("click", TV._onClick);
+    TV._onClick = null;
+  }
+
+  TV._video = null;
+  TV._screen = null;
+}
 
     //Logic to rotate around the island (home)
     let idleTimeout;
@@ -262,6 +292,7 @@ export default function Avatar() {
       controls.enableZoom = true;
       controls.update();
       transitionCamera(camera, controls, {x: 0.77, y: 1.3, z: 4.8}, { x: 0.77, y: 0.46, z: -1.47});
+      tv2();
     }
 
     function goAboutMe() {
@@ -270,6 +301,7 @@ export default function Avatar() {
       controls.enabled = false;
       controls.update();
       transitionCamera(camera, controls, {x: 3, y: 0.3, z: 0}, { x: 0.77, y: 0.46, z: -1.47});
+      tv2();
     }
 
     function goProjects() {
@@ -287,6 +319,7 @@ export default function Avatar() {
       controls.enabled = false;
       controls.update();
       transitionCamera(camera, controls, {x: -1.2, y: 0.45, z: -4}, { x: -0.9, y: 0.35, z: -1.3});
+      tv2();
     }
 
     document.getElementById("home-btn").addEventListener("click", goHome);
@@ -323,5 +356,4 @@ export default function Avatar() {
   );
 }
 //TODO: fix resize for mobile devices.
-//TODO: create tv2() function to turn off tv
 //TODO: fix sign to make more readable
