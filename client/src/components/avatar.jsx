@@ -188,7 +188,7 @@ function tv2() {
     function resetIdleTimer() {
       controls.autoRotate = false;
       clearTimeout(idleTimeout);
-      idleTimeout = setTimeout(setIdleRotation, 2000);
+      idleTimeout = setTimeout(setIdleRotation, 4000);
     }
     ["scroll", "mousedown", "wheel"].forEach(evt => {
       window.addEventListener(evt, resetIdleTimer);
@@ -231,35 +231,73 @@ function tv2() {
       }
     });
 
-
+    //contact rock
     const clickableMeshes = {};
     avatar.traverse((child) => {
-      if (child.isMesh) {
-        if (child.name === "Github") clickableMeshes.Github = child;
-        if (child.name === "LinkedIn") clickableMeshes.LinkedIn = child;
-        if (child.name === "Email") clickableMeshes.Email = child;
+      if(child.isMesh) {
+        if(child.name === "Github") clickableMeshes.Github = child;
+        if(child.name === "LinkedIn") clickableMeshes.LinkedIn = child;
+        if(child.name === "Email") clickableMeshes.Email = child;
       }
     });
 
     const mouse = new THREE.Vector2();
+    let hoveredMesh = null;
+    const originalMaterials = new Map();
 
-    container.addEventListener("mousedown", (event) => {
-      // Convert mouse position to normalized device coords
+    Object.values(clickableMeshes).forEach(mesh => {
+      originalMaterials.set(mesh, mesh.material.clone());
+    });
+
+    container.addEventListener("mousemove", (event) => {
       mouse.x = (event.offsetX / container.clientWidth) * 2 - 1;
       mouse.y = -(event.offsetY / container.clientHeight) * 2 + 1;
 
       raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(Object.values(clickableMeshes));
 
-      // Intersect only with the clickable meshes
+      if (intersects.length > 0) {
+        const mesh = intersects[0].object;       
+        document.body.style.cursor = "pointer";
+
+        if (hoveredMesh !== mesh) {
+
+          if (hoveredMesh) {
+            hoveredMesh.material = originalMaterials.get(hoveredMesh).clone();
+          }
+
+          mesh.material = mesh.material.clone();
+          mesh.material.emissive = new THREE.Color(0x444444);
+          hoveredMesh = mesh;
+        }
+      } 
+      else{
+        document.body.style.cursor = "default";
+
+        if (hoveredMesh) {
+          hoveredMesh.material = originalMaterials.get(hoveredMesh).clone();
+          hoveredMesh = null;
+        }
+      }
+    });
+
+    container.addEventListener("mousedown", (event) => {
+      mouse.x = (event.offsetX / container.clientWidth) * 2 - 1;
+      mouse.y = -(event.offsetY / container.clientHeight) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
       const intersects = raycaster.intersectObjects(Object.values(clickableMeshes));
 
       if (intersects.length > 0) {
         const clicked = intersects[0].object;
 
-        if (clicked.name === "LinkedIn") window.open("https://github.com/Derick12345678", "_blank");
-        else if (clicked.name === "Github") window.open("https://www.linkedin.com/in/derekgallagher1", "_blank");
-        else if (clicked.name === "Email") window.open("mailto:derekgallagher01@email.com", "_blank");
-        
+        if (clicked.name === "LinkedIn") {
+          window.open("https://github.com/Derick12345678", "_blank");
+        } else if (clicked.name === "Github") {
+          window.open("https://www.linkedin.com/in/derekgallagher1", "_blank");
+        } else if (clicked.name === "Email") {
+          window.open("mailto:derekgallagher01@email.com", "_blank");
+        }
       }
     });
 
@@ -281,31 +319,43 @@ function tv2() {
       });
     }
 
-
     function goHome() {
+      if (window.innerWidth <= 768) {
+        controls.minDistance = 15;
+        controls.maxDistance = 20;
+      }else {
+        controls.minDistance = 4.3;
+        controls.maxDistance = 10;
+      }
       controls.autoRotate = true;
       controls.autoRotateSpeed = 2;
       controls.enabled = true;
-      controls.minDistance = 4.3;
-      controls.maxDistance = 10;
       controls.enableDamping = true;
       controls.enableZoom = true;
       controls.update();
       transitionCamera(camera, controls, {x: 0.77, y: 1.3, z: 4.8}, { x: 0.77, y: 0.46, z: -1.47});
-      tv2();
+      //tv2();
     }
 
     function goAboutMe() {
-      controls.minDistance = 2.6;
+      if (window.innerWidth <= 768) {
+        controls.minDistance = 4;
+      }else {
+        controls.minDistance = 2.6;
+      }
       controls.autoRotateSpeed = 0;
       controls.enabled = false;
       controls.update();
       transitionCamera(camera, controls, {x: 3, y: 0.3, z: 0}, { x: 0.77, y: 0.46, z: -1.47});
-      tv2();
+      //tv2();
     }
 
     function goProjects() {
-      controls.minDistance = 2.05;
+      if (window.innerWidth <= 768) {
+        controls.minDistance = 3.25;
+      }else {
+        controls.minDistance = 2.05;
+      }
       controls.autoRotateSpeed = 0;
       controls.enabled = false;
       controls.update();
@@ -314,12 +364,16 @@ function tv2() {
     }
 
     function goContact() {
-      controls.minDistance = 2.9;
+      if (window.innerWidth <= 768) {
+        controls.minDistance = 3.4;
+      }else {
+        controls.minDistance = 2.9;
+      }
       controls.autoRotateSpeed = 0;
       controls.enabled = false;
       controls.update();
       transitionCamera(camera, controls, {x: -1.2, y: 0.45, z: -4}, { x: -0.9, y: 0.35, z: -1.3});
-      tv2();
+      //tv2();
     }
 
     document.getElementById("home-btn").addEventListener("click", goHome);
@@ -355,5 +409,4 @@ function tv2() {
     </div>
   );
 }
-//TODO: fix resize for mobile devices.
 //TODO: fix sign to make more readable
