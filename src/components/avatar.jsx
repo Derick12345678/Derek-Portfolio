@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -5,14 +6,17 @@ import { gsap } from "gsap";
 import '../home.css';
 
 export default function Avatar() {
-  window.onload = () => {loadModel(); console.log("Window loaded");};
+    useEffect(() => {
+    loadModel();
+    console.log("Window loaded (useEffect)");
+  }, []);
   
   function loadModel() {
     const loader = new GLTFLoader();
     loader.load(
       '/Derek-Portfolio/HomePage.glb',
       (gltf) => { console.log("Model loaded successfully"); setupScene(gltf); },
-      (xhr) => { console.log(`Loading progress: ${xhr.loaded/xhr.total*100}%`); },
+      undefined,
       (err) => { console.error("Error loading model:", err); }
     );
   }
