@@ -60,6 +60,7 @@ export default function Avatar() {
       const video = document.createElement("video");
       video.src = movies[currentMovieIndex];
       video.loop = true;
+      video.muted = true;
       video.autoplay = true;
       video.play();
 
