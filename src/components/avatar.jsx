@@ -9,8 +9,27 @@ export default function Avatar() {
 
   function loadModel() {
     const loader = new GLTFLoader();
-    loader.load('HomePage.glb', (gltf) => {setupScene(gltf)});
+    loader.load(
+      '/Derek-Portfolio/HomePage.glb',
+      (gltf) => {
+        setupScene(gltf);
+      }, 
+      undefined, 
+      (error) => {
+        const msg = document.createElement('div');
+        msg.innerText = "Please view on computer for the real experience";
+        msg.style.position = "fixed";
+        msg.style.top = "50%";
+        msg.style.left = "50%";
+        msg.style.transform = "translate(-50%, -50%)";
+        msg.style.background = "transparent";
+        msg.style.color = "white";
+        document.body.appendChild(msg);
+        console.error('Error loading model:', error);
+      }
+    );
   }
+
 
   function setupScene(gltf) {
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
