@@ -5,8 +5,8 @@ import { gsap } from "gsap";
 import '../home.css';
 
 export default function Avatar() {
-  window.onload = () => loadModel();
-
+  window.onload = () => {loadModel(); console.log("Window loaded");};
+  
   function loadModel() {
     const loader = new GLTFLoader();
     loader.load(
