@@ -15,8 +15,14 @@ export default function Avatar() {
     const loader = new GLTFLoader();
     loader.load(
       '/Derek-Portfolio/HomePage.glb',
-      (gltf) => { console.log("Model loaded successfully"); setupScene(gltf); },
-      undefined,
+      (gltf) => {
+        setupScene(gltf); 
+        document.getElementById('avatar-loading').style.display = 'none';
+      },
+      (xhr) =>{
+        const percentCompletion = Math.round((xhr.loaded / xhr.total) * 100);
+        document.getElementById('avatar-loading').innerText = `LOADING... ${percentCompletion}%`;
+      },
       (err) => { console.error("Error loading model:", err); }
     );
   }
