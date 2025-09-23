@@ -20,7 +20,7 @@ export default function Avatar() {
         document.getElementById('avatar-loading').style.display = 'none';
       },
       (xhr) =>{
-        const percentCompletion = Math.round((xhr.loaded / xhr.total) * 100);
+        const percentCompletion = Math.round((xhr.loaded / xhr.total) * 100 -50);
         document.getElementById('avatar-loading').innerText = `LOADING... ${percentCompletion}%`;
       },
       (err) => { console.error("Error loading model:", err); }
