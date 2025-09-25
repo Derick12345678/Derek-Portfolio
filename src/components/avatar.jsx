@@ -14,7 +14,7 @@ export default function Avatar() {
   function loadModel() {
     const loader = new GLTFLoader();
     loader.load(
-      '/HomePage.glb',
+      '/Derek-Portfolio/HomePage.glb',
       (gltf) => {
         setupScene(gltf); 
         document.getElementById('avatar-loading').style.display = 'none';
