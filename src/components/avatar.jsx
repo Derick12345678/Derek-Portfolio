@@ -46,7 +46,6 @@ export default function Avatar() {
     keyLight.lookAt(new THREE.Vector3());
     scene.add(keyLight);
 
-    // --- Shared interaction state (ONE raycaster/pointer) ---
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
     const interactables = []; // meshes only
@@ -55,7 +54,6 @@ export default function Avatar() {
     function applyHover(mesh) {
       if (!mesh) return clearHover();
 
-      // Don't highlight if this object represents the current view
       if (mesh.userData.view && mesh.userData.view === currentView) {
         return clearHover();
       }
@@ -87,7 +85,6 @@ export default function Avatar() {
       document.body.style.cursor = "default";
     }
 
-    // Tag all meshes under a node as clickable (and add to interactables list)
     function makeClickable(root, action, options = {}) {
       if (!root) return;
 
@@ -331,8 +328,6 @@ export default function Avatar() {
           { hoverType: "glow", view: "projects" }
         );
 
-
-        // Hide loading
         if (loadingEl) loadingEl.style.display = "none";
 
         // Default camera
@@ -348,7 +343,7 @@ export default function Avatar() {
       (err) => console.error("Error loading model:", err)
     );
 
-    // --- Unified pointer helpers ---
+
     function updatePointerFromEvent(ev) {
       pointer.x = (ev.offsetX / container.clientWidth) * 2 - 1;
       pointer.y = -(ev.offsetY / container.clientHeight) * 2 + 1;
@@ -356,7 +351,7 @@ export default function Avatar() {
 
     function raycast() {
       raycaster.setFromCamera(pointer, camera);
-      // We only raycast against interactables (already flattened to meshes)
+
       const hits = raycaster.intersectObjects(interactables, false);
       return hits;
     }
@@ -401,7 +396,6 @@ export default function Avatar() {
     };
     window.addEventListener("resize", onResize);
 
-    // --- Render loop ---
     const clock = new THREE.Clock();
     let rafId = 0;
 
@@ -414,7 +408,6 @@ export default function Avatar() {
     }
     animate();
 
-    // --- Cleanup (VERY important for React + performance) ---
     return () => {
       disposed = true;
 
@@ -440,7 +433,6 @@ export default function Avatar() {
       }
       if (tvTexture) tvTexture.dispose();
 
-      // Dispose renderer + remove canvas
       renderer.dispose();
       if (renderer.domElement && renderer.domElement.parentNode) {
         renderer.domElement.parentNode.removeChild(renderer.domElement);
