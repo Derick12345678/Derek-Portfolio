@@ -10,7 +10,7 @@ export default function Avatar() {
     const container = document.getElementById("avatar-container");
     const loadingEl = document.getElementById("avatar-loading");
     if (!container) return;
-    let currentView = "home"; 
+    let currentView = "home";
 
     // --- Core Three objects ---
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -66,7 +66,7 @@ export default function Avatar() {
       if (mesh.userData.hoverType === "yellow") {
         mesh.material = mesh.material.clone();
         mesh.material.color.set(0xffff00);
-      } 
+      }
       else if (mesh.userData.hoverType === "glow") {
         mesh.material = mesh.material.clone();
         if (mesh.material.emissive) {
@@ -92,7 +92,7 @@ export default function Avatar() {
         if (!child.isMesh) return;
 
         child.userData.action = action;
-        child.userData.hoverType = options.hoverType || "glow"; 
+        child.userData.hoverType = options.hoverType || "glow";
         child.userData.view = options.view || null;
 
         interactables.push(child);
@@ -191,7 +191,7 @@ export default function Avatar() {
       // Autoplay policy: must be muted on most browsers.
       tvVideo.muted = true;
       tvVideo.playsInline = true;
-      tvVideo.play().catch(() => {});
+      tvVideo.play().catch(() => { });
 
       tvTexture = new THREE.VideoTexture(tvVideo);
       tvTexture.flipY = false;
@@ -201,12 +201,12 @@ export default function Avatar() {
       function changeMovie(next) {
         idx = next ? (idx + 1) % movies.length : (idx - 1 + movies.length) % movies.length;
         tvVideo.src = movies[idx];
-        tvVideo.play().catch(() => {});
+        tvVideo.play().catch(() => { });
       }
 
       // Make arrows interactive using the same system:
-      makeClickable(upArrow, () => changeMovie(true), {hoverType: "yellow"});
-      makeClickable(downArrow, () => changeMovie(false), {hoverType: "yellow"});
+      makeClickable(upArrow, () => changeMovie(true), { hoverType: "yellow" });
+      makeClickable(downArrow, () => changeMovie(false), { hoverType: "yellow" });
     }
 
     function goProjects() {
@@ -265,7 +265,7 @@ export default function Avatar() {
     let disposed = false;
 
     loader.load(
-      "/Derek-Portfolio/HomePage2.glb",
+      "/Derek-Portfolio/HomePage.glb",
       (gltf) => {
         if (disposed) return;
 
