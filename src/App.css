@@ -1,15 +1,24 @@
 header {
   padding: 0px;
   text-align: right;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 10;
+  box-sizing: border-box;
 }
 
 .footer {
+  position: fixed;
+  bottom: 10px;
+  width: 100%;
   padding: 0px;
   text-align: left;
   font-size: 0.5em;
   color: #919090;
   margin-left: 10px;
-  margin-top: -20px;
+  z-index: 10;
+  pointer-events: none;
 }
 
 button{
@@ -33,9 +42,6 @@ section {
   padding: 0px;
   text-align: center;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
 }
 
 /**Delete after I make about me sign **/

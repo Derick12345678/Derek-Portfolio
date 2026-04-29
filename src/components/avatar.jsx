@@ -14,7 +14,7 @@ export default function Avatar() {
 
     // --- Core Three objects ---
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(window.innerWidth, window.innerHeight * 0.9);
+    renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -24,13 +24,20 @@ export default function Avatar() {
 
     const camera = new THREE.PerspectiveCamera(
       45,
-      window.innerWidth / (window.innerHeight * 0.9),
+      window.innerWidth / window.innerHeight,
       0.1,
       1000
     );
 
+    // Start partway zoomed out so the intro animation doesn't start inside the shoes
+    camera.position.set(0.77, 0.88, 1.66);
+
     const controls = new OrbitControls(camera, renderer.domElement);
+    controls.target.set(0.77, 0.46, -1.47);
     controls.enableDamping = true;
+
+    window.appCamera = camera;
+    window.appControls = controls;
 
     // --- Lighting ---
     scene.add(new THREE.AmbientLight(0xffffff, 0.6));
@@ -116,7 +123,10 @@ export default function Avatar() {
     }
 
     // --- Camera transitions ---
-    function transitionCamera(pos, target, duration = 2) {
+    let isTransitioning = false;
+
+    function transitionCamera(pos, target, duration = 2, onCompleteCallback = null) {
+      isTransitioning = true;
       gsap.to(camera.position, {
         duration,
         x: pos.x,
@@ -131,39 +141,64 @@ export default function Avatar() {
         y: target.y,
         z: target.z,
         ease: "power2.inOut",
+        onUpdate: () => {
+          camera.lookAt(controls.target);
+        },
+        onComplete: () => {
+          isTransitioning = false;
+          if (onCompleteCallback) onCompleteCallback();
+        }
       });
+    }
+
+    function getZoomedPos(origPos, targetPos, minDistance) {
+      const dx = origPos.x - targetPos.x;
+      const dy = origPos.y - targetPos.y;
+      const dz = origPos.z - targetPos.z;
+      const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      if (dist >= minDistance) return origPos;
+      const scale = minDistance / dist;
+      return {
+        x: targetPos.x + dx * scale,
+        y: targetPos.y + dy * scale,
+        z: targetPos.z + dz * scale
+      };
     }
 
     function goHome() {
       currentView = "home";
-      if (window.innerWidth <= 768) {
-        controls.minDistance = 15;
-        controls.maxDistance = 20;
-      } else {
-        controls.minDistance = 4.3;
-        controls.maxDistance = 10;
-      }
       controls.autoRotate = true;
       controls.autoRotateSpeed = 2;
-      controls.enabled = true;
-      controls.enableZoom = true;
-      controls.update();
+      controls.enabled = false;
       transitionCamera(
         { x: 0.77, y: 1.3, z: 4.8 },
-        { x: 0.77, y: 0.46, z: -1.47 }
+        { x: 0.77, y: 0.46, z: -1.47 },
+        2,
+        () => {
+          if (currentView !== "home") return;
+          if (window.innerWidth <= 768) {
+            controls.minDistance = 15;
+            controls.maxDistance = 20;
+          } else {
+            controls.minDistance = 4.3;
+            controls.maxDistance = 10;
+          }
+          controls.enabled = true;
+          controls.enableZoom = true;
+        }
       );
     }
 
     function goAboutMe() {
       currentView = "about";
-      controls.minDistance = window.innerWidth <= 768 ? 3.8 : 2.6;
+      controls.minDistance = 0;
+      controls.maxDistance = Infinity;
       controls.autoRotateSpeed = 0;
       controls.enabled = false;
-      controls.update();
-      transitionCamera(
-        { x: 3, y: 0.3, z: 0 },
-        { x: 0.77, y: 0.46, z: -1.47 }
-      );
+      const target = { x: 0.77, y: 0.46, z: -1.47 };
+      const origCam = { x: 3, y: 0.3, z: 0 };
+      const minD = window.innerWidth <= 768 ? 3.8 : 2.6;
+      transitionCamera(getZoomedPos(origCam, target, minD), target);
     }
 
     // TV subsystem (initialized once)
@@ -211,27 +246,27 @@ export default function Avatar() {
 
     function goProjects() {
       currentView = "projects";
-      controls.minDistance = window.innerWidth <= 768 ? 3.25 : 2.05;
+      controls.minDistance = 0;
+      controls.maxDistance = Infinity;
       controls.autoRotateSpeed = 0;
       controls.enabled = false;
-      controls.update();
-      transitionCamera(
-        { x: -1.35, y: 0.625, z: 0 },
-        { x: -0.6, y: 0.46, z: -1.47 }
-      );
+      const target = { x: -0.6, y: 0.46, z: -1.47 };
+      const origCam = { x: -1.35, y: 0.625, z: 0 };
+      const minD = window.innerWidth <= 768 ? 3.25 : 2.05;
+      transitionCamera(getZoomedPos(origCam, target, minD), target);
       if (avatarRef) initTV(avatarRef);
     }
 
     function goContact() {
       currentView = "contact";
-      controls.minDistance = window.innerWidth <= 768 ? 3.4 : 2.9;
+      controls.minDistance = 0;
+      controls.maxDistance = Infinity;
       controls.autoRotateSpeed = 0;
       controls.enabled = false;
-      controls.update();
-      transitionCamera(
-        { x: -1.2, y: 0.45, z: -4 },
-        { x: -0.9, y: 0.35, z: -1.3 }
-      );
+      const target = { x: -0.9, y: 0.35, z: -1.3 };
+      const origCam = { x: -1.2, y: 0.45, z: -4 };
+      const minD = window.innerWidth <= 768 ? 3.4 : 2.9;
+      transitionCamera(getZoomedPos(origCam, target, minD), target);
     }
 
     // --- Model + animations ---
@@ -265,7 +300,7 @@ export default function Avatar() {
     let disposed = false;
 
     loader.load(
-      "/Derek-Portfolio/HomePage.glb",
+      "/Derek-Portfolio/HomePage3.glb",
       (gltf) => {
         if (disposed) return;
 
@@ -389,9 +424,9 @@ export default function Avatar() {
 
     // Resize
     const onResize = () => {
-      camera.aspect = window.innerWidth / (window.innerHeight * 0.9);
+      camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight * 0.9);
+      renderer.setSize(window.innerWidth, window.innerHeight);
       goHome();
     };
     window.addEventListener("resize", onResize);
@@ -403,7 +438,9 @@ export default function Avatar() {
       rafId = requestAnimationFrame(animate);
       const dt = clock.getDelta();
       mixer.update(dt);
-      controls.update();
+      if (!isTransitioning) {
+        controls.update();
+      }
       renderer.render(scene, camera);
     }
     animate();
